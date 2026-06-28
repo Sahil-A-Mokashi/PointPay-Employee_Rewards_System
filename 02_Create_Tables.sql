@@ -116,6 +116,8 @@ CREATE TABLE Orders
 
     PointsUsed INT NOT NULL DEFAULT 0,
 
+    PaymentMethod VARCHAR(20) NOT NULL,
+
     RemainingAmount DECIMAL(10,2) NOT NULL,
 
     OrderStatus VARCHAR(20) NOT NULL,
@@ -136,7 +138,13 @@ CREATE TABLE Orders
         CHECK (PointsUsed >= 0),
 
     CONSTRAINT CHK_Order_Remaining
-        CHECK (RemainingAmount >= 0)
+        CHECK (RemainingAmount >= 0),
+
+    CONSTRAINT CHK_Order_Status
+        CHECK (OrderStatus IN ('Pending','Completed','Cancelled')),
+
+    CONSTRAINT CHK_Order_PaymentMethod
+        CHECK (PaymentMethod IN ('Cash','Points','Mixed'))
 );
 
 GO
