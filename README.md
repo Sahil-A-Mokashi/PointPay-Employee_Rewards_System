@@ -1,11 +1,11 @@
-**STEP 1 - Create Database**
+# STEP 1 - Create Database
 
 FILE  - **01_Create_Database.sql**
 
 What this does :
-***CREATE DATABASE PointPay;***
 
-***USE PointPay;***
+### CREATE DATABASE PointPay;
+### USE PointPay;
 
 Creates the PointPay Database and switches to the current database.
 
