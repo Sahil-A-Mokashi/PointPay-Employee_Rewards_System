@@ -1,10 +1,12 @@
-STEP 1 - **Create Database**
+**STEP 1 - Create Database**
 
-FILE  - **01_Create_Database.sql
-**
-What this does
-CREATE DATABASE PointPay;
+FILE  - **01_Create_Database.sql**
 
-Creates a new SQL Server database named PointPay.
+What this does :
+***CREATE DATABASE PointPay;***
 
-Until this is created, nothing else can exist.
+***USE PointPay;***
+
+Creates the PointPay Database and switches to the current database.
+
+Every table, view, trigger, function and procedure created afterwards will belong to PointPay instead of master which is SQL Server's default database.
