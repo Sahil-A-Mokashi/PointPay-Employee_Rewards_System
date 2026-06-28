@@ -1,0 +1,134 @@
+/*==========================================================
+INSERT DATA : Employees
+
+Source:
+- U.S. Census Bureau - Frequently Occurring Surnames
+- U.S. Social Security Administration - Popular Baby Names
+
+Names are used only as fictional sample data for educational purposes.
+Initial password for all users: Password@123
+Stored using SHA2-256 hashing.
+==========================================================*/
+
+INSERT INTO Employees
+(
+    EmployeeCode,
+    FullName,
+    Email,
+    PasswordHash
+)
+VALUES
+
+('EMP001','James Smith','james.smith@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP002','Mary Johnson','mary.johnson@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP003','Robert Williams','robert.williams@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP004','Patricia Brown','patricia.brown@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP005','John Jones','john.jones@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP006','Jennifer Garcia','jennifer.garcia@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP007','Michael Miller','michael.miller@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP008','Linda Davis','linda.davis@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP009','William Rodriguez','william.rodriguez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP010','Elizabeth Martinez','elizabeth.martinez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+
+('EMP011','David Hernandez','david.hernandez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP012','Barbara Lopez','barbara.lopez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP013','Richard Gonzalez','richard.gonzalez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP014','Susan Wilson','susan.wilson@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP015','Joseph Anderson','joseph.anderson@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP016','Jessica Thomas','jessica.thomas@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP017','Thomas Taylor','thomas.taylor@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP018','Sarah Moore','sarah.moore@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP019','Charles Jackson','charles.jackson@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP020','Karen Martin','karen.martin@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+
+('EMP021','Christopher Lee','christopher.lee@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP022','Nancy Perez','nancy.perez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP023','Daniel Thompson','daniel.thompson@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP024','Lisa White','lisa.white@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP025','Matthew Harris','matthew.harris@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP026','Betty Sanchez','betty.sanchez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP027','Anthony Clark','anthony.clark@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP028','Margaret Ramirez','margaret.ramirez@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP029','Mark Lewis','mark.lewis@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP030','Sandra Robinson','sandra.robinson@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+
+('EMP031','Donald Walker','donald.walker@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP032','Ashley Young','ashley.young@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP033','Steven Allen','steven.allen@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP034','Kimberly King','kimberly.king@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP035','Paul Wright','paul.wright@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP036','Donna Scott','donna.scott@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP037','Andrew Torres','andrew.torres@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP038','Emily Nguyen','emily.nguyen@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP039','Joshua Hill','joshua.hill@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP040','Michelle Flores','michelle.flores@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+
+('EMP041','Kenneth Green','kenneth.green@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP042','Amanda Adams','amanda.adams@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP043','Kevin Nelson','kevin.nelson@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP044','Melissa Baker','melissa.baker@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP045','Brian Hall','brian.hall@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP046','Rebecca Rivera','rebecca.rivera@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP047','George Campbell','george.campbell@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP048','Stephanie Mitchell','stephanie.mitchell@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP049','Edward Carter','edward.carter@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2)),
+('EMP050','Amy Roberts','amy.roberts@pointpay.com',CONVERT(VARCHAR(64),HASHBYTES('SHA2_256','Password@123'),2));
+
+GO
+
+/*==========================================================
+UPDATE DATA : Employees
+Adds realistic account activity for demonstration purposes
+==========================================================*/
+
+-- Different Last Login dates
+UPDATE Employees
+SET LastLogin = DATEADD(DAY, -2, GETDATE())
+WHERE EmployeeID BETWEEN 1 AND 10;
+
+UPDATE Employees
+SET LastLogin = DATEADD(DAY, -7, GETDATE())
+WHERE EmployeeID BETWEEN 11 AND 20;
+
+UPDATE Employees
+SET LastLogin = DATEADD(DAY, -15, GETDATE())
+WHERE EmployeeID BETWEEN 21 AND 30;
+
+UPDATE Employees
+SET LastLogin = DATEADD(DAY, -30, GETDATE())
+WHERE EmployeeID BETWEEN 31 AND 40;
+
+UPDATE Employees
+SET LastLogin = DATEADD(DAY, -60, GETDATE())
+WHERE EmployeeID BETWEEN 41 AND 50;
+
+
+-- Employees who recently entered incorrect passwords
+UPDATE Employees
+SET FailedAttempts = 2
+WHERE EmployeeID IN (8, 19);
+
+UPDATE Employees
+SET FailedAttempts = 4
+WHERE EmployeeID = 27;
+
+
+-- One employee temporarily locked
+UPDATE Employees
+SET FailedAttempts = 5,
+    LockUntil = DATEADD(MINUTE,15,GETDATE())
+WHERE EmployeeID = 46;
+
+
+-- Three employees have left the company
+UPDATE Employees
+SET IsActive = 0
+WHERE EmployeeID IN (13, 29, 47);
+
+
+-- Employees with no previous login (new joiners)
+UPDATE Employees
+SET LastLogin = NULL
+WHERE EmployeeID IN (48,49,50);
+
+GO
