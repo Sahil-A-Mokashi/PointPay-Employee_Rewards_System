@@ -1,3 +1,7 @@
+-- Use the database
+USE PointPay;
+GO
+
 /*==========================================================
 Wallet Transactions
 Welcome Bonus
