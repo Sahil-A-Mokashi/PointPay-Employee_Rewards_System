@@ -9,6 +9,9 @@ Names are used only as fictional sample data for educational purposes.
 Initial password for all users: Password@123
 Stored using SHA2-256 hashing.
 ==========================================================*/
+-- Use the database
+USE PointPay;
+GO
 
 INSERT INTO Employees
 (
