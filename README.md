@@ -141,22 +141,82 @@ FILE - **05_Triggers.sql**
 
 What this does:
 
-Creates SQL Server triggers used to automate business rules
-within the PointPay database.
+Creates SQL Server triggers that automatically enforce business rules and
+maintain data consistency within the PointPay database.
 
 Triggers created:
 
 1. trg_UpdateOrderTotal
-   Automatically recalculates an order's total whenever
-   products are added, modified or removed from OrderItems.
+   Automatically recalculates the total value of an order whenever
+   products are added, updated or removed from OrderItems.
 
 2. trg_CheckProductAvailability
-   Prevents inactive or out-of-stock products from being
-   added to an order.
+   Prevents inactive or out-of-stock products from being added
+   to an order.
 
 3. trg_ProcessApprovedReturn
-   Automatically updates wallet transactions when a return
-   request is approved.
+   Automatically creates a wallet refund transaction when a return
+   request is approved. Refund values are calculated dynamically
+   based on the original order's payment method and total amount.
 
-These triggers improve data consistency by automatically
-maintaining derived values and enforcing business rules.
+These triggers automate repetitive tasks, maintain data integrity,
+and reduce manual updates.
+
+
+# STEP 6 - Initialise Order Totals
+
+FILE - **06_Initialise_Order_Totals.sql**
+
+What this does:
+
+Initialises the TotalAmount column for all existing orders using the
+udf_CalculateOrderTotal() function.
+
+This step is required only once after creating the trigger because
+the trigger maintains future changes automatically but does not
+recalculate historical data.
+
+Executed statement:
+
+### UPDATE Orders
+### SET TotalAmount = dbo.udf_CalculateOrderTotal(OrderID);
+
+
+
+# STEP 7 - Insert Remaining Data
+
+FILE - **07_Programmatically_Insert_Remaining_Data.sql**
+
+What this does:
+
+Completes the database by inserting the remaining operational data
+required by the PointPay rewards platform.
+
+Data inserted:
+
+1. Welcome Bonus Transactions
+   Every employee receives an initial reward points bonus.
+
+2. Order Redemption Transactions
+   Employees who redeem rewards using Points or Mixed payment
+   methods have reward points deducted automatically.
+
+3. Performance Bonus Transactions
+   Selected employees receive additional reward points based
+   on predefined business rules.
+
+4. Administrative Adjustment Transactions
+   Manual point adjustments are added for demonstration purposes.
+
+5. Return Requests
+   Return requests are inserted with an initial Pending status.
+
+6. Return Processing
+   Approved and rejected returns are simulated using UPDATE
+   statements. When a return is approved, the trigger
+   trg_ProcessApprovedReturn automatically inserts the
+   corresponding wallet refund transaction.
+
+The PointPay platform uses a unified reward system where
+€1 is equivalent to 10 reward points. All wallet transactions,
+including refunds, are therefore stored in reward points.
