@@ -78,7 +78,10 @@ GO
 TRIGGER : Process Approved Return
 Automatically creates a wallet refund transaction when
 a return request is approved.
+    Refund points are calculated dynamically from the related
+order
 ==========================================================*/
+
 CREATE OR ALTER TRIGGER trg_ProcessApprovedReturn
 ON Returns
 AFTER UPDATE
