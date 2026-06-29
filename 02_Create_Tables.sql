@@ -110,7 +110,8 @@ CREATE TABLE Orders
 
     OrderNumber VARCHAR(30) NOT NULL UNIQUE,
 
-    TotalAmount DECIMAL(10,2) NOT NULL,
+    TotalAmount DECIMAL(10,2)
+    CONSTRAINT DF_Orders_TotalAmount DEFAULT (0),
 
     CashPaid DECIMAL(10,2) NOT NULL DEFAULT 0,
 
@@ -118,7 +119,8 @@ CREATE TABLE Orders
 
     PaymentMethod VARCHAR(20) NOT NULL,
 
-    RemainingAmount DECIMAL(10,2) NOT NULL,
+    RemainingAmount DECIMAL(10,2) NOT NULL
+    CONSTRAINT DF_Orders_RemainingAmount DEFAULT (0),
 
     OrderStatus VARCHAR(20) NOT NULL,
 
