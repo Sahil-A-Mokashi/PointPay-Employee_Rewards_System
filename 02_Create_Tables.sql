@@ -124,17 +124,11 @@ CREATE TABLE Orders
         FOREIGN KEY(EmployeeID)
         REFERENCES Employees(EmployeeID),
 
-    CONSTRAINT CHK_Order_Total
-        CHECK (TotalAmount >= 0),
-
     CONSTRAINT CHK_Order_CashPaid
         CHECK (CashPaid >= 0),
 
     CONSTRAINT CHK_Order_Points
         CHECK (PointsUsed >= 0),
-
-    CONSTRAINT CHK_Order_Remaining
-        CHECK (RemainingAmount >= 0),
 
     CONSTRAINT CHK_Order_Status
         CHECK (OrderStatus IN ('Pending','Completed','Cancelled')),
@@ -183,7 +177,26 @@ CREATE TABLE WalletTransactions
         REFERENCES Orders(OrderID),
 
     CONSTRAINT CHK_Transaction_Points
-        CHECK (Points > 0)
+        CHECK (Points > 0),
+    
+    CONSTRAINT CHK_Transaction_Type
+        CHECK (TransactionType IN
+        (
+            'Credit',
+            'Debit',
+            'Refund',
+            'Bonus',
+            'Adjustment',
+            'Redeem'
+        )),
+
+    CONSTRAINT CHK_Transaction_Status
+        CHECK (TransactionStatus IN
+        (
+            'Pending',
+            'Completed',
+            'Cancelled'
+        ))
 );
 
 GO
@@ -260,10 +273,7 @@ CREATE TABLE Returns
 
     CONSTRAINT FK_Return_Admin
         FOREIGN KEY(ApprovedBy)
-        REFERENCES Employees(EmployeeID),
-
-    CONSTRAINT CHK_Return_Refund
-        CHECK (RefundPoints >= 0)
+        REFERENCES Employees(EmployeeID)
 );
 
 GO
