@@ -273,7 +273,18 @@ CREATE TABLE Returns
 
     CONSTRAINT FK_Return_Admin
         FOREIGN KEY(ApprovedBy)
-        REFERENCES Employees(EmployeeID)
+        REFERENCES Employees(EmployeeID),
+
+    CONSTRAINT CHK_Return_Status
+        CHECK
+        (
+            ReturnStatus IN
+            (
+                'Pending',
+                'Approved',
+                'Rejected'
+            )
+        )
 );
 
 GO
