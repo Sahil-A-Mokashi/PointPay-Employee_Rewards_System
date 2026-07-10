@@ -110,17 +110,11 @@ CREATE TABLE Orders
 
     OrderNumber VARCHAR(30) NOT NULL UNIQUE,
 
-    TotalAmount DECIMAL(10,2)
-    CONSTRAINT DF_Orders_TotalAmount DEFAULT (0),
-
     CashPaid DECIMAL(10,2) NOT NULL DEFAULT 0,
 
     PointsUsed INT NOT NULL DEFAULT 0,
 
     PaymentMethod VARCHAR(20) NOT NULL,
-
-    RemainingAmount DECIMAL(10,2) NOT NULL
-    CONSTRAINT DF_Orders_RemainingAmount DEFAULT (0),
 
     OrderStatus VARCHAR(20) NOT NULL,
 
@@ -249,8 +243,6 @@ CREATE TABLE Returns
     ApprovedBy INT NULL,
 
     ReturnReason VARCHAR(255) NOT NULL,
-
-    RefundPoints INT NOT NULL,
 
     ReturnStatus VARCHAR(20) NOT NULL,
 
