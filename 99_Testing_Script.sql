@@ -154,10 +154,16 @@ WHERE TransactionType='Refund';
 --update one of the refunds status to approved
 UPDATE Returns
 SET
-ReturnStatus='Approved',
-ApprovedBy=1,
-ApprovalDate=GETDATE()
-WHERE ReturnID=11;
+    ReturnStatus = 'Approved',
+    ApprovedBy = 1,
+    ApprovalDate = GETDATE()
+WHERE ReturnID =
+(
+    SELECT TOP 1 ReturnID
+    FROM Returns
+    WHERE ReturnStatus = 'Pending'
+    ORDER BY ReturnID
+);
 
 -- see the count or result 
 SELECT
