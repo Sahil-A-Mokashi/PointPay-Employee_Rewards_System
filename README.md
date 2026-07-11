@@ -141,82 +141,234 @@ FILE - **05_Triggers.sql**
 
 What this does:
 
-Creates SQL Server triggers that automatically enforce business rules and
-maintain data consistency within the PointPay database.
+Creates SQL Server triggers that automatically enforce business rules and maintain data consistency within the PointPay database.
 
 Triggers created:
+1. trg_UpdateProductStock
 
-1. trg_UpdateOrderTotal
-   Automatically recalculates the total value of an order whenever
-   products are added, updated or removed from OrderItems.
+Automatically updates product stock levels whenever order items are inserted, updated or deleted.
 
 2. trg_CheckProductAvailability
-   Prevents inactive or out-of-stock products from being added
-   to an order.
+
+Prevents inactive or out-of-stock products from being added to an order.
 
 3. trg_ProcessApprovedReturn
-   Automatically creates a wallet refund transaction when a return
-   request is approved. Refund values are calculated dynamically
-   based on the original order's payment method and total amount.
 
-These triggers automate repetitive tasks, maintain data integrity,
-and reduce manual updates.
+Automatically creates a wallet refund transaction whenever a return request is approved. Refund values are calculated dynamically using the udf_CalculateOrderTotal() function based on the original order details.
 
+These triggers automate inventory management, validate business rules and maintain data consistency without requiring manual intervention.
 
-# STEP 6 - Initialise Order Totals
+# STEP 6 - Insert Remaining Data
 
-FILE - **06_Initialise_Order_Totals.sql**
+FILE - **06_Insert_Remaining_Data.sql**
 
 What this does:
 
-Initialises the TotalAmount column for all existing orders using the
-udf_CalculateOrderTotal() function.
-
-This step is required only once after creating the trigger because
-the trigger maintains future changes automatically but does not
-recalculate historical data.
-
-Executed statement:
-
-### UPDATE Orders
-### SET TotalAmount = dbo.udf_CalculateOrderTotal(OrderID);
-
-
-
-# STEP 7 - Insert Remaining Data
-
-FILE - **07_Programmatically_Insert_Remaining_Data.sql**
-
-What this does:
-
-Completes the database by inserting the remaining operational data
-required by the PointPay rewards platform.
+Completes the database by inserting the remaining operational data required by the PointPay rewards platform.
 
 Data inserted:
-
 1. Welcome Bonus Transactions
-   Every employee receives an initial reward points bonus.
+
+Every employee receives an initial reward points bonus.
 
 2. Order Redemption Transactions
-   Employees who redeem rewards using Points or Mixed payment
-   methods have reward points deducted automatically.
+
+Employees who redeem rewards using Points or Mixed payment methods have reward points deducted automatically. Redemption values are calculated dynamically using the udf_CalculateOrderTotal() function.
 
 3. Performance Bonus Transactions
-   Selected employees receive additional reward points based
-   on predefined business rules.
+
+Selected employees receive additional reward points based on predefined business rules.
 
 4. Administrative Adjustment Transactions
-   Manual point adjustments are added for demonstration purposes.
+
+Manual reward point adjustments are inserted for demonstration purposes.
 
 5. Return Requests
-   Return requests are inserted with an initial Pending status.
+
+Sample return requests are inserted with an initial Pending status.
 
 6. Return Processing
-   Approved and rejected returns are simulated using UPDATE
-   statements. When a return is approved, the trigger
-   trg_ProcessApprovedReturn automatically inserts the
-   corresponding wallet refund transaction.
 
-The PointPay platform uses a unified reward system where
-€1 is equivalent to 10 reward points. All wallet transactions,
-including refunds, are therefore stored in reward points.
+Selected return requests are approved or rejected using UPDATE statements. When a return request is approved, the trigger trg_ProcessApprovedReturn automatically inserts the corresponding wallet refund transaction.
+
+The PointPay platform uses a unified reward system where €1 = 10 reward points. All wallet transactions, including reward redemptions and refunds, are stored using reward points.
+
+# STEP 7 - Stored Procedures
+
+FILE - **07_Stored_Procedures.sql**
+
+What this does:
+
+Creates reusable SQL Server Stored Procedures used throughout the PointPay database.
+
+Stored Procedures created:
+1. sp_PlaceOrder
+
+Creates a new order and inserts multiple order items from an XML document. Product prices are automatically retrieved from the Products table while inventory validation and stock updates are handled by database triggers.
+
+2. sp_ApproveReturn
+
+Approves a pending return request. Once approved, the trg_ProcessApprovedReturn trigger automatically creates the corresponding wallet refund transaction.
+
+3. sp_RedeemPoints
+
+Allows employees to redeem reward points from their wallet after validating that sufficient reward points are available.
+
+These stored procedures centralise business logic, improve maintainability, reduce repetitive SQL code and ensure transactional consistency.
+
+Test Queries
+EXEC sp_PlaceOrder
+    @EmployeeID = 1,
+    @PaymentMethod = 'Mixed',
+    @CashPaid = 150,
+    @PointsUsed = 1000,
+    @OrderStatus = 'Pending',
+    @OrderItems = @OrderItems;
+
+EXEC sp_ApproveReturn
+    @ReturnID = 11,
+    @ApprovedBy = 1;
+
+EXEC sp_RedeemPoints
+    @WalletID = 1,
+    @Points = 500;
+
+All stored procedures were successfully tested after creation.
+
+# STEP 8 - Create Views
+
+FILE - **08_Views.sql**
+
+What this does:
+
+Creates SQL Server Views that simplify reporting by combining information from multiple related tables.
+
+Views created:
+1. vw_EmployeeWalletSummary
+
+Displays employee information together with their current wallet balance.
+
+2. vw_OrderSummary
+
+Displays order information together with dynamically calculated order totals using udf_CalculateOrderTotal().
+
+3. vw_ProductInventory
+
+Displays the product catalogue together with pricing information, stock levels and availability.
+
+4. vw_ReturnSummary
+
+Displays return requests together with employee and order information.
+
+These views simplify reporting, reduce duplicate SQL queries and provide reusable datasets throughout the PointPay database.
+
+Test Queries
+SELECT * FROM vw_EmployeeWalletSummary;
+
+SELECT * FROM vw_OrderSummary;
+
+SELECT * FROM vw_ProductInventory;
+
+SELECT * FROM vw_ReturnSummary;
+
+All views were successfully tested after creation.
+
+# STEP 9 - XML Demonstration
+
+FILE - **09_XML.sql**
+
+What this does:
+
+Demonstrates SQL Server XML functionality for both importing and exporting data.
+
+XML demonstrations:
+1. XML Input
+
+Creates a new order by passing multiple order items as an XML document to sp_PlaceOrder.
+
+2. Orders as XML
+
+Exports order information using FOR XML PATH.
+
+3. Products as XML
+
+Exports the product catalogue using FOR XML PATH.
+
+4. Wallet Transactions as XML
+
+Exports wallet transaction history using FOR XML PATH.
+
+This demonstrates both XML parsing using SQL Server XML methods and XML generation using SQL Server's native XML functionality.
+
+Test Queries
+EXEC sp_PlaceOrder
+    @EmployeeID = 1,
+    @PaymentMethod = 'Mixed',
+    @CashPaid = 150,
+    @PointsUsed = 1000,
+    @OrderStatus = 'Pending',
+    @OrderItems = @OrderItems;
+
+The XML import and export functionality was successfully tested.
+
+# STEP 10 - Innovation
+
+FILE - **10_Innovation.sql**
+
+What this does:
+
+Implements the Reward Points Redemption System as the innovation component of the PointPay database.
+
+Innovation Demonstration:
+1. View Wallet Balance
+
+Displays the employee's wallet balance before redemption.
+
+2. Redeem Reward Points
+
+Executes sp_RedeemPoints to redeem reward points from the employee's wallet.
+
+3. View Updated Wallet Balance
+
+Displays the remaining wallet balance after redemption.
+
+4. View Redeem Transaction
+
+Displays the newly created Redeem transaction recorded in WalletTransactions.
+
+5. Validation
+
+Attempts to redeem more points than available to demonstrate business rule validation.
+
+This feature extends the existing reward platform without requiring any modifications to the underlying database schema.
+
+Test Queries
+EXEC sp_RedeemPoints
+    @WalletID = 1,
+    @Points = 500;
+
+The innovation was successfully tested and validated.
+
+# STEP 11 - Testing
+
+FILE - **11_Test_Queries.sql**
+
+What this does:
+
+Provides a comprehensive set of test queries that verify the functionality of all database objects created throughout the project.
+
+Components Tested
+Table Row Counts
+User Defined Functions
+Triggers
+Primary Key Constraints
+Foreign Key Constraints
+Unique Constraints
+Check Constraints
+Stored Procedures
+Views
+XML Functionality
+Innovation Feature
+Final Database Summary
+
+The testing script confirms that all business rules, constraints, stored procedures, views, XML functionality and innovation features operate correctly within the PointPay database.
