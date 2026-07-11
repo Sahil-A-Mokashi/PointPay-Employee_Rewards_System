@@ -2,35 +2,35 @@
 USE PointPay;
 GO
 /*==========================================================
-TRIGGER : Update Order Total
+TRIGGER : Update Product Stock
+Automatically maintains product inventory whenever
+order items are inserted, updated or deleted.
 ==========================================================*/
 
-CREATE OR ALTER TRIGGER trg_UpdateOrderTotal
+CREATE TRIGGER trg_UpdateProductStock
 ON OrderItems
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    ;WITH ChangedOrders AS
-    (
-        SELECT OrderID FROM inserted
-        UNION
-        SELECT OrderID FROM deleted
-    )
-    UPDATE O
-    SET TotalAmount = dbo.udf_CalculateOrderTotal(O.OrderID)
-    FROM Orders O
-    INNER JOIN
-    (
-        SELECT DISTINCT OrderID
-        FROM ChangedOrders
-        WHERE OrderID IS NOT NULL
-    ) C
-        ON O.OrderID = C.OrderID;
+    -- Restore stock for deleted rows
+    UPDATE P
+    SET StockQuantity = StockQuantity + D.Quantity
+    FROM Products P
+    INNER JOIN deleted D
+        ON P.ProductID = D.ProductID;
+
+    -- Deduct stock for inserted rows
+    UPDATE P
+    SET StockQuantity = StockQuantity - I.Quantity
+    FROM Products P
+    INNER JOIN inserted I
+        ON P.ProductID = I.ProductID;
 END;
 GO
 
+    
 /*==========================================================
 TRIGGER : Check Product Availability
 ==========================================================*/
@@ -111,13 +111,13 @@ BEGIN
 
         CASE
             WHEN O.PaymentMethod='Cash'
-                THEN CAST(O.TotalAmount * 10 AS INT)
-
+                THEN CAST(dbo.udf_CalculateOrderTotal(O.OrderID) * 10 AS INT)
+        
             WHEN O.PaymentMethod='Points'
-                THEN CAST(O.TotalAmount * 10 AS INT)
-
+                THEN CAST(dbo.udf_CalculateOrderTotal(O.OrderID) * 10 AS INT)
+        
             WHEN O.PaymentMethod='Mixed'
-                THEN CAST((O.TotalAmount/2.0)*10 AS INT)
+                THEN CAST((dbo.udf_CalculateOrderTotal(O.OrderID) / 2.0) * 10 AS INT)
         END,
 
         'Completed'
