@@ -7,7 +7,7 @@ USE PointPay;
 GO
 
 /*==========================================================
-XML Order Example
+1 .XML Order Example
 ==========================================================*/
 
 DECLARE @OrderItems XML =
@@ -72,4 +72,37 @@ SELECT TOP 10
 FROM OrderItems
 ORDER BY OrderItemID DESC;
 
+GO
+
+
+/*==========================================================
+2. Generate Employee Orders as XML
+==========================================================*/
+
+SELECT
+    O.OrderID,
+    O.OrderNumber,
+    E.FullName,
+    O.PaymentMethod,
+    O.OrderStatus,
+    dbo.udf_CalculateOrderTotal(O.OrderID) AS OrderTotal
+FROM Orders O
+INNER JOIN Employees E
+    ON O.EmployeeID = E.EmployeeID
+FOR XML PATH('Order'), ROOT('Orders');
+GO
+
+/*==========================================================
+3. Generate Product Catalogue XML
+==========================================================*/
+
+SELECT
+    ProductID,
+    ProductName,
+    CashPrice,
+    PointsPrice,
+    StockQuantity
+FROM Products
+WHERE IsActive = 1
+FOR XML PATH('Product'), ROOT('Products');
 GO
