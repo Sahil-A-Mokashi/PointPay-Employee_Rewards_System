@@ -31,8 +31,10 @@ dbo.udf_CalculateOrderTotal(OrderID) AS CalculatedTotal
 FROM Orders
 WHERE OrderID<=10;
 
-/* For every row it ust give 
-TotalAmount = CalculatedTotal   */
+/*
+Each order should return the correct calculated total
+based on the associated OrderItems.
+*/
 
 
 /* -----------------------------------------------------------------------------------------------------------------*/
@@ -68,10 +70,12 @@ PRINT '========== Trigger 1 ==========';
 -- Check stock before
 
 SELECT
-ProductID,
-StockQuantity
-FROM Products
-WHERE ProductID=1;
+P.ProductID,
+P.StockQuantity
+FROM Products P
+JOIN OrderItems OI
+ON P.ProductID = OI.ProductID
+WHERE OI.OrderItemID = 1;
 
 -- Increase quantity by 1
 
@@ -82,10 +86,12 @@ WHERE OrderItemID = 1;
 -- Stock should decrease by 1
 
 SELECT
-ProductID,
-StockQuantity
-FROM Products
-WHERE ProductID=1;
+P.ProductID,
+P.StockQuantity
+FROM Products P
+JOIN OrderItems OI
+ON P.ProductID = OI.ProductID
+WHERE OI.OrderItemID = 1;
 
 -- Restore original quantity
 
@@ -96,10 +102,13 @@ WHERE OrderItemID = 1;
 -- Stock should return to original value
 
 SELECT
-ProductID,
-StockQuantity
-FROM Products
-WHERE ProductID=1;
+P.ProductID,
+P.StockQuantity
+FROM Products P
+JOIN OrderItems OI
+ON P.ProductID = OI.ProductID
+WHERE OI.OrderItemID = 1;
+
 /* -----------------------------------------------------------------------------------------------------------------*/
 PRINT '========== Trigger 2 ==========';
 -- deactivate a product
@@ -109,9 +118,21 @@ WHERE ProductID=1;
 
 -- try adding it to the orderitem
 INSERT INTO OrderItems
-(OrderID,ProductID,Quantity,UnitCashPrice,UnitPointsPrice)
-VALUES
-(1,1,1,95,950);
+  (
+  OrderID,
+  ProductID,
+  Quantity,
+  UnitCashPrice,
+  UnitPointsPrice
+  )
+SELECT
+  1,
+  ProductID,
+  1,
+  CashPrice,
+  PointsPrice
+FROM Products
+WHERE ProductID = 1;
 
 -- expected : Product is inactive or insufficient stock available.
 
