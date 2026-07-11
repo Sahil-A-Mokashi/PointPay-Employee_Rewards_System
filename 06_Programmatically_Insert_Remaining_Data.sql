@@ -50,7 +50,7 @@ SELECT
     O.OrderID,
     'Debit',
     'Order Redemption',
-    CAST(O.TotalAmount * 10 AS INT),
+    CAST(dbo.udf_CalculateOrderTotal(O.OrderID) * 10 AS INT),
     'Completed'
 FROM Orders O
 JOIN Wallets W
@@ -82,7 +82,7 @@ SELECT
     O.OrderID,
     'Debit',
     'Order Redemption',
-    CAST((O.TotalAmount/2.0)*10 AS INT),
+    CAST((dbo.udf_CalculateOrderTotal(O.OrderID)/2.0)*10 AS INT),
     'Completed'
 FROM Orders O
 JOIN Wallets W
@@ -153,7 +153,9 @@ GO
     -insert all sample records into returns table as pending,
     -approve the first 10 and reject last 5 ,
     once we update the returns table a trigger will run, 
-    only for the records that were marked as approved the trigger will create a refund transaction in wallet transactions table.
+    only for the records that were marked as approved The trigger dynamically calculates the refund points using
+    dbo.udf_CalculateOrderTotal() and inserts the corresponding
+    wallet transaction for approved returns.
     
     -----------------------------------------------------------------------------------------*/
 /*==========================================================
@@ -167,7 +169,6 @@ INSERT INTO Returns
     EmployeeID,
     ApprovedBy,
     ReturnReason,
-    RefundPoints,
     ReturnStatus,
     RequestDate,
     ApprovalDate
@@ -185,16 +186,6 @@ SELECT TOP (20)
         ELSE 'Packaging Damage'
     END,
 
-    CASE
-        WHEN O.PaymentMethod = 'Cash'
-            THEN 0
-
-        WHEN O.PaymentMethod = 'Points'
-            THEN CAST(O.TotalAmount * 10 AS INT)
-
-        WHEN O.PaymentMethod = 'Mixed'
-            THEN CAST((O.TotalAmount / 2.0) * 10 AS INT)
-    END,
 
     'Pending',
 
