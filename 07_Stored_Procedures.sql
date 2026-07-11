@@ -228,3 +228,265 @@ BEGIN
 END;
 
 GO
+
+
+/*==========================================================
+STORED PROCEDURE : Approve Return
+Approves a pending return request.
+The trigger trg_ProcessApprovedReturn automatically
+creates the corresponding wallet refund transaction.
+==========================================================*/
+
+CREATE PROCEDURE sp_ApproveReturn
+(
+    @ReturnID INT,
+    @ApprovedBy INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+
+        BEGIN TRANSACTION;
+
+        /*==========================================
+        Validate Return Request
+        ==========================================*/
+
+        IF NOT EXISTS
+        (
+            SELECT 1
+            FROM Returns
+            WHERE ReturnID = @ReturnID
+        )
+        BEGIN
+            RAISERROR
+            (
+                'Return request does not exist.',
+                16,
+                1
+            );
+        END;
+
+        /*==========================================
+        Ensure Return is Pending
+        ==========================================*/
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM Returns
+            WHERE ReturnID = @ReturnID
+              AND ReturnStatus <> 'Pending'
+        )
+        BEGIN
+            RAISERROR
+            (
+                'Return request has already been processed.',
+                16,
+                1
+            );
+        END;
+
+        /*==========================================
+        Validate Approver
+        ==========================================*/
+
+        IF NOT EXISTS
+        (
+            SELECT 1
+            FROM Employees
+            WHERE EmployeeID = @ApprovedBy
+              AND IsActive = 1
+        )
+        BEGIN
+            RAISERROR
+            (
+                'Approver does not exist or is inactive.',
+                16,
+                1
+            );
+        END;
+
+        /*==========================================
+        Approve Return
+        ==========================================*/
+
+        UPDATE Returns
+        SET
+            ReturnStatus = 'Approved',
+            ApprovedBy = @ApprovedBy,
+            ApprovalDate = GETDATE()
+        WHERE ReturnID = @ReturnID;
+
+        COMMIT TRANSACTION;
+
+        PRINT 'Return approved successfully.';
+
+        /*==========================================
+        Display Updated Return
+        ==========================================*/
+
+        SELECT
+            ReturnID,
+            OrderID,
+            EmployeeID,
+            ApprovedBy,
+            ReturnStatus,
+            ApprovalDate
+        FROM Returns
+        WHERE ReturnID = @ReturnID;
+
+    END TRY
+
+    BEGIN CATCH
+
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+
+    END CATCH
+
+END;
+GO
+
+
+/*==========================================================
+STORED PROCEDURE : Redeem Points
+Redeems reward points from an employee wallet.
+
+The procedure validates:
+1. Wallet exists.
+2. Points requested are greater than zero.
+3. Wallet has sufficient balance.
+
+If successful, a Redeem transaction is created.
+==========================================================*/
+
+CREATE PROCEDURE sp_RedeemPoints
+(
+    @WalletID INT,
+    @Points INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+
+        BEGIN TRANSACTION;
+
+        DECLARE @EmployeeID INT;
+        DECLARE @CurrentBalance INT;
+
+        /*==========================================
+        Validate Wallet
+        ==========================================*/
+
+        SELECT
+            @EmployeeID = EmployeeID
+        FROM Wallets
+        WHERE WalletID = @WalletID;
+
+        IF @EmployeeID IS NULL
+        BEGIN
+            RAISERROR
+            (
+                'Wallet does not exist.',
+                16,
+                1
+            );
+        END;
+
+        /*==========================================
+        Validate Points Requested
+        ==========================================*/
+
+        IF @Points <= 0
+        BEGIN
+            RAISERROR
+            (
+                'Points must be greater than zero.',
+                16,
+                1
+            );
+        END;
+
+        /*==========================================
+        Get Current Wallet Balance
+        ==========================================*/
+
+        SET @CurrentBalance =
+            dbo.udf_GetWalletBalance(@WalletID);
+
+        /*==========================================
+        Check Available Balance
+        ==========================================*/
+
+        IF @CurrentBalance < @Points
+        BEGIN
+            RAISERROR
+            (
+                'Insufficient wallet balance.',
+                16,
+                1
+            );
+        END;
+
+        /*==========================================
+        Redeem Points
+        ==========================================*/
+
+        INSERT INTO WalletTransactions
+        (
+            WalletID,
+            EmployeeID,
+            OrderID,
+            TransactionType,
+            TransactionSource,
+            Points,
+            TransactionStatus
+        )
+        VALUES
+        (
+            @WalletID,
+            @EmployeeID,
+            NULL,
+            'Redeem',
+            'Reward Redemption',
+            @Points,
+            'Completed'
+        );
+
+        COMMIT TRANSACTION;
+
+        PRINT 'Points redeemed successfully.';
+
+        /*==========================================
+        Show Updated Wallet Summary
+        ==========================================*/
+
+        SELECT
+            @WalletID AS WalletID,
+            @EmployeeID AS EmployeeID,
+            @CurrentBalance AS BalanceBeforeRedemption,
+            @Points AS PointsRedeemed,
+            dbo.udf_GetWalletBalance(@WalletID) AS RemainingBalance;
+
+    END TRY
+
+    BEGIN CATCH
+
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+
+    END CATCH
+
+END;
+
+GO
+
