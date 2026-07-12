@@ -1,3 +1,13 @@
+# PointPay Database Project
+**Project Overview**
+
+PointPay is a SQL Server-based employee rewards platform developed as part of the Advanced Database assignment. The system allows employees to redeem products using cash, reward points or a combination of both, while providing administrators with the ability to manage products, orders, wallets and return requests.
+
+The database has been designed following Third Normal Form (3NF) principles to minimise data redundancy and maintain data integrity. Business logic is implemented using User Defined Functions (UDFs), Stored Procedures, Triggers, Views, and XML, while SQL Server constraints enforce referential integrity and data validation.
+
+This README explains each SQL script in the order it should be executed and describes the purpose of every database object created throughout the project.
+
+
 # STEP 1 - Create Database
 
 FILE  - **01_Create_Database.sql**
