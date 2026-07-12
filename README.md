@@ -1,11 +1,22 @@
 # PointPay Database Project
 **Project Overview**
 
-PointPay is a SQL Server-based employee rewards platform developed as part of the Advanced Database assignment. The system allows employees to redeem products using cash, reward points or a combination of both, while providing administrators with the ability to manage products, orders, wallets and return requests.
+PointPay is a SQL Server-based Employee Rewards Management System developed as part of the Advanced Database assignment. The system enables employees to purchase rewards using cash, reward points, or a combination of both, while allowing administrators to manage products, employee wallets, orders, and return requests.
 
-The database has been designed following Third Normal Form (3NF) principles to minimise data redundancy and maintain data integrity. Business logic is implemented using User Defined Functions (UDFs), Stored Procedures, Triggers, Views, and XML, while SQL Server constraints enforce referential integrity and data validation.
+The project demonstrates the design and implementation of a fully relational database by applying database normalisation principles, referential integrity, and business rule enforcement. The database follows Third Normal Form (3NF) to minimise data redundancy by storing only source data and calculating derived values dynamically whenever required.
 
-This README explains each SQL script in the order it should be executed and describes the purpose of every database object created throughout the project.
+The system is built using several SQL Server database objects, including:
+
+**Tables** to store employees, wallets, products, orders, order items, wallet transactions and returns.
+**Constraints** (Primary Keys, Foreign Keys, Unique, Check and Default Constraints) to maintain data integrity and enforce valid data.
+**User Defined Functions (UDFs)** to calculate order totals, wallet balances and product availability.
+**Triggers** to automatically update product stock, validate product availability and process refund transactions without manual intervention.
+**Stored Procedures** to perform common business operations such as placing orders, approving returns and redeeming reward points while ensuring transactional consistency.
+**Views** to simplify reporting by combining information from multiple related tables.
+**XML** to demonstrate both importing and exporting structured data, including placing orders using XML input and generating XML reports.
+**Innovation** in the form of a Reward Points Redemption System that extends the existing platform without modifying the database schema.
+
+All SQL scripts are organised into separate files and should be executed sequentially. Each subsequent script depends on the successful execution of the previous one. This README describes the purpose of every script, the database objects it creates, and how each component contributes to the overall functionality of the PointPay database.
 
 
 # STEP 1 - Create Database
