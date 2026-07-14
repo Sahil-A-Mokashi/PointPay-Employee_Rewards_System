@@ -1,10 +1,16 @@
 -- =============================================
--- STORED PROCEDURE : Place Order
--- Creates a new order and inserts multiple
--- order items from an XML document.
+-- PointPay Database
+-- 07_Stored_Procedures.sql
+-- Simplified Stored Procedures
 -- =============================================
 
-CREATE PROCEDURE sp_PlaceOrder
+USE PointPay;
+GO
+
+/*==========================================================
+STORED PROCEDURE : Place Order
+==========================================================*/
+CREATE OR ALTER PROCEDURE sp_PlaceOrder
 (
     @EmployeeID INT,
     @PaymentMethod VARCHAR(20),
@@ -18,118 +24,30 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-
         BEGIN TRANSACTION;
-
-        /*==========================================
-        Validate Employee
-        ==========================================*/
 
         IF NOT EXISTS
         (
             SELECT 1
             FROM Employees
-            WHERE EmployeeID = @EmployeeID
-              AND IsActive = 1
+            WHERE EmployeeID=@EmployeeID
+            AND IsActive=1
         )
         BEGIN
-            RAISERROR
-            (
-                'Employee does not exist or is inactive.',
-                16,
-                1
-            );
+            RAISERROR('Employee does not exist or is inactive.',16,1);
+            ROLLBACK TRANSACTION;
+            RETURN;
         END;
 
-        /*==========================================
-        Validate Payment Method
-        ==========================================*/
+        DECLARE @NextOrderNo INT,
+                @OrderID INT,
+                @OrderNumber VARCHAR(30);
 
-        IF @PaymentMethod NOT IN ('Cash','Points','Mixed')
-        BEGIN
-            RAISERROR
-            (
-                'Invalid payment method.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Validate Order Status
-        ==========================================*/
-
-        IF @OrderStatus NOT IN ('Pending','Completed','Cancelled')
-        BEGIN
-            RAISERROR
-            (
-                'Invalid order status.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Validate XML
-        ==========================================*/
-
-        IF @OrderItems IS NULL
-        BEGIN
-            RAISERROR
-            (
-                'Order XML cannot be NULL.',
-                16,
-                1
-            );
-        END;
-
-        IF @OrderItems.exist('/OrderItems/Item') = 0
-        BEGIN
-            RAISERROR
-            (
-                'Order must contain at least one item.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Generate Next Order Number
-        ORD000001
-        ORD000002
-        ==========================================*/
-
-        DECLARE @NextOrderNo INT;
-
-        SELECT
-            @NextOrderNo =
-            ISNULL
-            (
-                MAX
-                (
-                    CAST
-                    (
-                        SUBSTRING(OrderNumber,4,6)
-                        AS INT
-                    )
-                ),
-                0
-            ) + 1
+        SELECT @NextOrderNo =
+            ISNULL(MAX(CAST(SUBSTRING(OrderNumber,4,6) AS INT)),0)+1
         FROM Orders;
 
-        DECLARE @OrderNumber VARCHAR(30);
-
-        SET @OrderNumber =
-            'ORD' +
-            RIGHT
-            (
-                '000000' + CAST(@NextOrderNo AS VARCHAR(6)),
-                6
-            );
-
-        /*==========================================
-        Create Order
-        ==========================================*/
+        SET @OrderNumber='ORD'+RIGHT('000000'+CAST(@NextOrderNo AS VARCHAR(6)),6);
 
         INSERT INTO Orders
         (
@@ -152,13 +70,7 @@ BEGIN
             GETDATE()
         );
 
-        DECLARE @OrderID INT;
-
-        SET @OrderID = SCOPE_IDENTITY();
-
-        /*==========================================
-        Insert Order Items
-        ==========================================*/
+        SET @OrderID=SCOPE_IDENTITY();
 
         INSERT INTO OrderItems
         (
@@ -168,76 +80,36 @@ BEGIN
             UnitCashPrice,
             UnitPointsPrice
         )
-
         SELECT
-
             @OrderID,
-
-            X.Item.value
-            (
-                '(ProductID)[1]',
-                'INT'
-            ),
-
-            X.Item.value
-            (
-                '(Quantity)[1]',
-                'INT'
-            ),
-
+            X.Item.value('(ProductID)[1]','INT'),
+            X.Item.value('(Quantity)[1]','INT'),
             P.CashPrice,
-
             P.PointsPrice
-
-        FROM
-        @OrderItems.nodes('/OrderItems/Item') X(Item)
-
-        INNER JOIN Products P
-
-            ON P.ProductID =
-            X.Item.value
-            (
-                '(ProductID)[1]',
-                'INT'
-            );
+        FROM @OrderItems.nodes('/OrderItems/Item') X(Item)
+        JOIN Products P
+        ON P.ProductID=X.Item.value('(ProductID)[1]','INT');
 
         COMMIT TRANSACTION;
 
-        PRINT 'Order placed successfully.';
-
         SELECT
-
             @OrderID AS OrderID,
-
             @OrderNumber AS OrderNumber,
-
-            dbo.udf_CalculateOrderTotal(@OrderID)
-            AS OrderTotal;
+            dbo.udf_CalculateOrderTotal(@OrderID) AS OrderTotal;
 
     END TRY
-
     BEGIN CATCH
-
-        IF @@TRANCOUNT > 0
+        IF @@TRANCOUNT>0
             ROLLBACK TRANSACTION;
-
         THROW;
-
     END CATCH
-
 END;
-
 GO
-
 
 /*==========================================================
 STORED PROCEDURE : Approve Return
-Approves a pending return request.
-The trigger trg_ProcessApprovedReturn automatically
-creates the corresponding wallet refund transaction.
 ==========================================================*/
-
-CREATE PROCEDURE sp_ApproveReturn
+CREATE OR ALTER PROCEDURE sp_ApproveReturn
 (
     @ReturnID INT,
     @ApprovedBy INT
@@ -246,126 +118,25 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
+    UPDATE Returns
+    SET
+        ReturnStatus='Approved',
+        ApprovedBy=@ApprovedBy,
+        ApprovalDate=GETDATE()
+    WHERE
+        ReturnID=@ReturnID
+        AND ReturnStatus='Pending';
 
-        BEGIN TRANSACTION;
-
-        /*==========================================
-        Validate Return Request
-        ==========================================*/
-
-        IF NOT EXISTS
-        (
-            SELECT 1
-            FROM Returns
-            WHERE ReturnID = @ReturnID
-        )
-        BEGIN
-            RAISERROR
-            (
-                'Return request does not exist.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Ensure Return is Pending
-        ==========================================*/
-
-        IF EXISTS
-        (
-            SELECT 1
-            FROM Returns
-            WHERE ReturnID = @ReturnID
-              AND ReturnStatus <> 'Pending'
-        )
-        BEGIN
-            RAISERROR
-            (
-                'Return request has already been processed.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Validate Approver
-        ==========================================*/
-
-        IF NOT EXISTS
-        (
-            SELECT 1
-            FROM Employees
-            WHERE EmployeeID = @ApprovedBy
-              AND IsActive = 1
-        )
-        BEGIN
-            RAISERROR
-            (
-                'Approver does not exist or is inactive.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Approve Return
-        ==========================================*/
-
-        UPDATE Returns
-        SET
-            ReturnStatus = 'Approved',
-            ApprovedBy = @ApprovedBy,
-            ApprovalDate = GETDATE()
-        WHERE ReturnID = @ReturnID;
-
-        COMMIT TRANSACTION;
-
-        PRINT 'Return approved successfully.';
-
-        /*==========================================
-        Display Updated Return
-        ==========================================*/
-
-        SELECT
-            ReturnID,
-            OrderID,
-            EmployeeID,
-            ApprovedBy,
-            ReturnStatus,
-            ApprovalDate
-        FROM Returns
-        WHERE ReturnID = @ReturnID;
-
-    END TRY
-
-    BEGIN CATCH
-
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-
-        THROW;
-
-    END CATCH
-
+    SELECT *
+    FROM Returns
+    WHERE ReturnID=@ReturnID;
 END;
 GO
 
-
 /*==========================================================
 STORED PROCEDURE : Redeem Points
-Redeems reward points from an employee wallet.
-
-The procedure validates:
-1. Wallet exists.
-2. Points requested are greater than zero.
-3. Wallet has sufficient balance.
-
-If successful, a Redeem transaction is created.
 ==========================================================*/
-
-CREATE PROCEDURE sp_RedeemPoints
+CREATE OR ALTER PROCEDURE sp_RedeemPoints
 (
     @WalletID INT,
     @Points INT
@@ -374,119 +145,33 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
+    IF dbo.udf_GetWalletBalance(@WalletID) < @Points
+    BEGIN
+        RAISERROR('Insufficient wallet balance.',16,1);
+        RETURN;
+    END;
 
-        BEGIN TRANSACTION;
+    INSERT INTO WalletTransactions
+    (
+        WalletID,
+        EmployeeID,
+        OrderID,
+        TransactionType,
+        TransactionSource,
+        Points,
+        TransactionStatus
+    )
+    SELECT
+        WalletID,
+        EmployeeID,
+        NULL,
+        'Redeem',
+        'Reward Redemption',
+        @Points,
+        'Completed'
+    FROM Wallets
+    WHERE WalletID=@WalletID;
 
-        DECLARE @EmployeeID INT;
-        DECLARE @CurrentBalance INT;
-
-        /*==========================================
-        Validate Wallet
-        ==========================================*/
-
-        SELECT
-            @EmployeeID = EmployeeID
-        FROM Wallets
-        WHERE WalletID = @WalletID;
-
-        IF @EmployeeID IS NULL
-        BEGIN
-            RAISERROR
-            (
-                'Wallet does not exist.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Validate Points Requested
-        ==========================================*/
-
-        IF @Points <= 0
-        BEGIN
-            RAISERROR
-            (
-                'Points must be greater than zero.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Get Current Wallet Balance
-        ==========================================*/
-
-        SET @CurrentBalance =
-            dbo.udf_GetWalletBalance(@WalletID);
-
-        /*==========================================
-        Check Available Balance
-        ==========================================*/
-
-        IF @CurrentBalance < @Points
-        BEGIN
-            RAISERROR
-            (
-                'Insufficient wallet balance.',
-                16,
-                1
-            );
-        END;
-
-        /*==========================================
-        Redeem Points
-        ==========================================*/
-
-        INSERT INTO WalletTransactions
-        (
-            WalletID,
-            EmployeeID,
-            OrderID,
-            TransactionType,
-            TransactionSource,
-            Points,
-            TransactionStatus
-        )
-        VALUES
-        (
-            @WalletID,
-            @EmployeeID,
-            NULL,
-            'Redeem',
-            'Reward Redemption',
-            @Points,
-            'Completed'
-        );
-
-        COMMIT TRANSACTION;
-
-        PRINT 'Points redeemed successfully.';
-
-        /*==========================================
-        Show Updated Wallet Summary
-        ==========================================*/
-
-        SELECT
-            @WalletID AS WalletID,
-            @EmployeeID AS EmployeeID,
-            @CurrentBalance AS BalanceBeforeRedemption,
-            @Points AS PointsRedeemed,
-            dbo.udf_GetWalletBalance(@WalletID) AS RemainingBalance;
-
-    END TRY
-
-    BEGIN CATCH
-
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-
-        THROW;
-
-    END CATCH
-
+    SELECT dbo.udf_GetWalletBalance(@WalletID) AS RemainingBalance;
 END;
-
 GO
-
