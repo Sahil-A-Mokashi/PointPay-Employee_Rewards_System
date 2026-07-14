@@ -87,7 +87,7 @@ SET FailedAttempts = 5,
 WHERE EmployeeID = 14;
 
 
--- Three employees have left the company
+-- one employees has left the company
 UPDATE Employees
 SET IsActive = 0
 WHERE EmployeeID IN (12);
