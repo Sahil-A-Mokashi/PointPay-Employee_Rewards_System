@@ -12,14 +12,7 @@ SELECT COUNT(*) AS OrderItems FROM OrderItems;
 SELECT COUNT(*) AS WalletTransactions FROM WalletTransactions;
 SELECT COUNT(*) AS Returns FROM Returns;
 
-/*
-Employees          50
-Wallets            50
-Products           50
-Orders             100
-OrderItems         modified count
-WalletTransactions modified count
-Returns            20 */
+
 
 
 /* -----------------------------------------------------------------------------------------------------------------*/
@@ -216,7 +209,7 @@ PasswordHash
 )
 VALUES
 (
-'EMP051',
+''EMP026'',
 'Test User',
 'james.smith@pointpay.com',
 'ABC'
@@ -406,3 +399,8 @@ FROM Wallets
 WHERE WalletID = 1;
 
 GO
+
+
+PRINT CHAR(10) + '========== DATABASE TEST COMPLETED ==========';
+
+PRINT 'All database objects executed successfully.';
