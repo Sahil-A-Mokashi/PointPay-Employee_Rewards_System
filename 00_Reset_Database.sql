@@ -9,3 +9,6 @@ DROP TABLE IF EXISTS Products;
 DROP TABLE IF EXISTS Wallets;
 DROP TABLE IF EXISTS Employees;
 GO
+
+USE master;
+Drop Database PointPay;
