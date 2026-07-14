@@ -108,7 +108,7 @@ INSERT INTO WalletTransactions
     Points,
     TransactionStatus
 )
-SELECT TOP 10
+SELECT TOP 7
     WalletID,
     EmployeeID,
     NULL,
@@ -173,33 +173,17 @@ INSERT INTO Returns
     RequestDate,
     ApprovalDate
 )
-SELECT TOP (20)
+SELECT TOP (10)
     O.OrderID,
     O.EmployeeID,
     NULL,
-
-    CASE (O.OrderID % 5)
-        WHEN 0 THEN 'Damaged Product'
-        WHEN 1 THEN 'Wrong Item Delivered'
-        WHEN 2 THEN 'Changed Mind'
-        WHEN 3 THEN 'Defective Product'
-        ELSE 'Packaging Damage'
-    END,
-
-
+    'Changed Mind',
     'Pending',
-
     DATEADD(DAY,5,O.OrderDate),
-
     NULL
-
 FROM Orders O
-
-WHERE
-O.OrderStatus='Completed'
-
-ORDER BY
-O.OrderID;
+WHERE O.OrderStatus='Completed'
+ORDER BY O.OrderID;
 
 GO
 
@@ -213,7 +197,7 @@ SET
     ApprovedBy=1,
     ApprovalDate=GETDATE()
 
-WHERE ReturnID BETWEEN 1 AND 10;
+WHERE ReturnID BETWEEN 1 AND 5;
 
 GO
     
@@ -227,7 +211,7 @@ SET
     ApprovedBy=1,
     ApprovalDate=GETDATE()
 
-WHERE ReturnID BETWEEN 16 AND 20;
+WHERE ReturnID BETWEEN 9 AND 15;
 
 GO
 
